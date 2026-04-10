@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CBTI — 你的道德人格底色</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* ===== Reset & Base ===== */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: "Noto Serif SC", "STSong", "SimSun", serif;
+      background: #0b0f1a;
+      background-image:
+        radial-gradient(ellipse at 20% 50%, rgba(56, 71, 122, .18) 0%, transparent 70%),
+        radial-gradient(ellipse at 80% 20%, rgba(92, 64, 108, .12) 0%, transparent 60%);
+      color: #d4d0c8;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    /* ===== Container ===== */
+    .app {
+      width: 100%;
+      max-width: 480px;
+      padding: 32px 24px;
+      position: relative;
+    }
+
+    /* ===== Screens ===== */
+    .screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      animation: screenIn .65s cubic-bezier(.23,1,.32,1);
+    }
+    .screen.active { display: flex; }
+
+    @keyframes screenIn {
+      from { opacity: 0; transform: scale(.97) translateY(12px); filter: blur(4px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+    }
+
+    /* ===== Start Screen ===== */
+    .start-screen .divider-line {
+      width: 32px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #6b5f4d, transparent);
+      margin: 0 auto 32px;
+    }
+    .start-screen h1 {
+      font-size: 1.65rem;
+      letter-spacing: .12em;
+      margin-bottom: 20px;
+      font-weight: 500;
+      color: #e2ddd4;
+      line-height: 1.5;
+    }
+    .start-screen .subtitle {
+      font-size: .86rem;
+      color: #7a756b;
+      line-height: 2;
+      margin-bottom: 44px;
+      font-weight: 300;
+    }
+    .start-screen .meta {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      margin-bottom: 52px;
+    }
+    .start-screen .meta span {
+      font-size: .72rem;
+      color: #55504a;
+      letter-spacing: .12em;
+      padding: 5px 14px;
+      border: 1px solid #2a2520;
+      border-radius: 20px;
+    }
+
+    .btn-start {
+      background: transparent;
+      border: 1px solid #4a4035;
+      color: #b5a990;
+      padding: 15px 56px;
+      font-family: inherit;
+      font-size: .88rem;
+      letter-spacing: .35em;
+      cursor: pointer;
+      transition: all .35s ease;
+      border-radius: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-start::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(180,150,100,.08), rgba(180,150,100,.02));
+      opacity: 0;
+      transition: opacity .35s;
+    }
+    .btn-start:hover {
+      border-color: #8a7a60;
+      color: #e2ddd4;
+    }
+    .btn-start:hover::before { opacity: 1; }
+
+    /* ===== Quiz Screen ===== */
+    .quiz-screen { width: 100%; }
+
+    .progress-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 44px;
+    }
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #1e1a16;
+      border: 1px solid #2e2a24;
+      transition: all .35s ease;
+    }
+    .dot.done {
+      background: #6b5f4d;
+      border-color: #6b5f4d;
+      box-shadow: 0 0 6px rgba(107,95,77,.3);
+    }
+    .dot.current {
+      background: #b5a990;
+      border-color: #b5a990;
+      transform: scale(1.35);
+      box-shadow: 0 0 10px rgba(181,169,144,.25);
+    }
+
+    .question-number {
+      font-size: .7rem;
+      color: #55504a;
+      letter-spacing: .3em;
+      margin-bottom: 24px;
+      font-weight: 300;
+    }
+
+    .question-text {
+      font-size: 1.05rem;
+      font-weight: 400;
+      line-height: 2;
+      margin-bottom: 40px;
+      min-height: 56px;
+      color: #c8c2b6;
+      letter-spacing: .04em;
+    }
+
+    /* ===== Options ===== */
+    .options {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 36px;
+    }
+
+    .option-btn {
+      width: 100%;
+      background: rgba(255,255,255,.02);
+      border: 1px solid #1e1a16;
+      color: #8a8478;
+      padding: 15px 18px;
+      font-family: inherit;
+      font-size: .84rem;
+      text-align: left;
+      cursor: pointer;
+      transition: all .3s ease;
+      border-radius: 10px;
+      letter-spacing: .03em;
+      line-height: 1.65;
+    }
+    .option-btn:hover {
+      border-color: #4a4035;
+      background: rgba(181,169,144,.04);
+      color: #c8c2b6;
+    }
+    .option-btn.selected {
+      border-color: #6b5f4d;
+      background: rgba(181,169,144,.08);
+      color: #e2ddd4;
+      box-shadow: 0 0 16px rgba(107,95,77,.1);
+    }
+
+    /* ===== Navigation ===== */
+    .nav-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      margin-top: 4px;
+    }
+
+    .btn-nav {
+      background: none;
+      border: none;
+      color: #55504a;
+      font-family: inherit;
+      font-size: .78rem;
+      cursor: pointer;
+      letter-spacing: .1em;
+      transition: color .3s;
+      padding: 8px 4px;
+    }
+    .btn-nav:hover { color: #b5a990; }
+    .btn-nav:disabled { opacity: .15; cursor: default; }
+    .btn-nav:disabled:hover { color: #55504a; }
+
+    /* ===== Result Screen ===== */
+    .result-screen {
+      text-align: center;
+    }
+    .result-screen h2 {
+      font-size: 1.3rem;
+      font-weight: 400;
+      letter-spacing: .15em;
+      margin-bottom: 14px;
+      color: #c8c2b6;
+    }
+    .result-screen .result-subtitle {
+      font-size: .82rem;
+      color: #5e584f;
+      margin-bottom: 36px;
+      line-height: 1.8;
+      font-weight: 300;
+    }
+
+    .type-name {
+      font-size: 1.5rem;
+      font-weight: 500;
+      letter-spacing: .15em;
+      color: #e2ddd4;
+      margin-bottom: 8px;
+    }
+    .type-tag {
+      font-size: .76rem;
+      color: #6b5f4d;
+      letter-spacing: .18em;
+      margin-bottom: 32px;
+      font-weight: 300;
+    }
+    .type-desc {
+      font-size: .84rem;
+      color: #8a8478;
+      line-height: 2;
+      text-align: left;
+      margin-bottom: 40px;
+      padding: 22px 20px;
+      background: linear-gradient(135deg, rgba(107,95,77,.06), rgba(107,95,77,.02));
+      border: 1px solid #1e1a16;
+      border-radius: 12px;
+    }
+    .type-desc strong {
+      color: #b5a990;
+      font-weight: 500;
+    }
+
+    /* Score bars */
+    .score-bars {
+      width: 100%;
+      text-align: left;
+      margin-bottom: 40px;
+    }
+    .score-bars h3 {
+      font-size: .72rem;
+      color: #4a4540;
+      letter-spacing: .25em;
+      margin-bottom: 20px;
+      text-align: center;
+      font-weight: 300;
+    }
+    .bar-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 9px;
+      font-size: .72rem;
+    }
+    .bar-label {
+      width: 56px;
+      flex-shrink: 0;
+      color: #6b6560;
+      text-align: right;
+      padding-right: 14px;
+      letter-spacing: .08em;
+      font-weight: 400;
+      font-size: .74rem;
+    }
+    .bar-track {
+      flex: 1;
+      height: 4px;
+      background: #151210;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: width .7s cubic-bezier(.23,1,.32,1);
+    }
+    .bar-fill.top    { background: linear-gradient(90deg, #8a7a60, #b5a990); }
+    .bar-fill.normal { background: #2e2a24; }
+    .bar-pct {
+      width: 32px;
+      text-align: right;
+      color: #4a4540;
+      padding-left: 8px;
+      font-weight: 300;
+    }
+
+    .result-card {
+      width: 100%;
+      text-align: left;
+      margin-bottom: 16px;
+      padding: 18px 18px;
+      background: rgba(255,255,255,.015);
+      border: 1px solid #1a1714;
+      border-radius: 10px;
+      animation: screenIn .5s cubic-bezier(.23,1,.32,1);
+    }
+    .result-card .r-q {
+      font-size: .78rem;
+      color: #6b6560;
+      margin-bottom: 8px;
+      line-height: 1.7;
+      font-weight: 300;
+    }
+    .result-card .r-yours {
+      font-size: .8rem;
+      color: #a09880;
+      margin-bottom: 6px;
+    }
+    .result-card .r-explain {
+      font-size: .76rem;
+      color: #4a4540;
+      line-height: 1.7;
+      border-top: 1px solid #1e1a16;
+      padding-top: 8px;
+      font-weight: 300;
+    }
+
+    .score-summary {
+      font-size: 1rem;
+      color: #8a8478;
+      margin-bottom: 36px;
+      letter-spacing: .1em;
+    }
+    .score-summary strong {
+      color: #e2ddd4;
+      font-size: 1.6rem;
+      font-weight: 400;
+    }
+
+    .btn-restart {
+      background: transparent;
+      border: 1px solid #3a342c;
+      color: #8a7a60;
+      padding: 13px 48px;
+      font-family: inherit;
+      font-size: .82rem;
+      letter-spacing: .3em;
+      cursor: pointer;
+      transition: all .3s;
+      border-radius: 24px;
+      margin-top: 24px;
+      margin-bottom: 40px;
+    }
+    .btn-restart:hover {
+      border-color: #6b5f4d;
+      color: #c8c2b6;
+    }
+
+    /* ===== Scrollable result ===== */
+    .result-screen.active {
+      max-height: 100vh;
+      overflow-y: auto;
+      padding-bottom: 48px;
+    }
+    .result-screen.active::-webkit-scrollbar { width: 3px; }
+    .result-screen.active::-webkit-scrollbar-track { background: transparent; }
+    .result-screen.active::-webkit-scrollbar-thumb { background: #2e2a24; border-radius: 2px; }
+    body:has(.result-screen.active) {
+      overflow-y: auto;
+    }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 560px) {
+      .app { padding: 20px 16px; }
+      .start-screen h1 { font-size: 1.3rem; }
+      .question-text { font-size: .95rem; }
+      .bar-label { width: 52px; font-size: .68rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ====== Start Screen ====== -->
+  <div id="startScreen" class="screen start-screen active">
+    <div class="divider-line"></div>
+    <h1>CBTI<br><span style="font-size:.72em;font-weight:300;letter-spacing:.06em;">Chinese-Based Temperament Inventory</span></h1>
+    <p class="subtitle">
+      中国特色人格测试<br>
+      十个问题，四个字母，勾勒你看待世界的方式
+    </p>
+    <p class="meta">
+      <span>10 道题</span>
+      <span>10 种人格</span>
+      <span>约 3 分钟</span>
+    </p>
+    <button class="btn-start" onclick="startQuiz()">开始测验</button>
+  </div>
+
+  <!-- ====== Quiz Screen ====== -->
+  <div id="quizScreen" class="screen quiz-screen">
+    <div class="progress-wrap" id="progressDots"></div>
+    <div class="question-number" id="questionNumber"></div>
+    <div class="question-text" id="questionText"></div>
+    <div class="options" id="optionsContainer"></div>
+    <div class="nav-bar">
+      <button class="btn-nav" id="btnPrev" onclick="prevQuestion()">← 上一题</button>
+    </div>
+  </div>
+
+  <!-- ====== Result Screen ====== -->
+  <div id="resultScreen" class="screen result-screen">
+    <h2>测验结果</h2>
+    <p class="result-subtitle">基于你的十个选择，这是你的道德人格轮廓</p>
+    <div class="type-name" id="typeName"></div>
+    <div class="type-tag" id="typeTag"></div>
+    <div class="type-desc" id="typeDesc"></div>
+    <div class="score-bars" id="scoreBars"></div>
+    <div id="resultList"></div>
+    <button class="btn-restart" onclick="restartQuiz()">再测一次</button>
+  </div>
+
+</div>
+
+<script>
+// ==================== TYPE DEFINITIONS ====================
+/*
+  4-letter codes — intuitive English abbreviations:
+    LULZ = 纯粹解构乐子人 (LOL/laughs)
+    CALC = 精致理性利己者 (Calculating)
+    EMPT = 感性共鸣优先者 (Empathy)
+    VOID = 彻底虚无躺平者 (Void/nihil)
+    JUST = 原则至上理想者 (Justice)
+    GRND = 绩效至上攀登者 (Grind)
+    NARR = 宏大叙事信仰者 (Narrative)
+    PHIL = 独立思辨哲学家 (Philosophy)
+    RULE = 规则秩序守护者 (Rule)
+    COZY = 具体幸福生活家 (Cozy)
+*/
+const TYPE_INFO = {
+  chaos: {
+    name: "纯粹解构乐子人",
+    code: "LULZ",
+    tag: "Laughing Under Ludicrous Zeitgeist",
+    emoji: "🎭",
+    desc: "<strong>核心驱动：趣味与解构。</strong><br><br>你拒绝严肃讨论，认为所有的价值观、道德观都可以被拿来开玩笑。你通过嘲讽一切来获得心理优势，不站队，只看戏。评论区是你的舞台，反串和阴阳怪气是你的语言。<br><br>你并非没有道德感——你只是觉得，在这个荒诞的世界里，笑比哭高级。"
+  },
+  egoist: {
+    name: "精致理性利己者",
+    code: "CALC",
+    tag: "Calculated Allocation of Leveraged Capital",
+    emoji: "🪞",
+    desc: "<strong>核心驱动：个人利益最大化。</strong><br><br>你拥有极高水平的理性，并不违法，甚至表现得非常有修养——但这只是因为「表现得有道德」有助于你获取资源。你是利用规则的大师，能精准识别谁对自己有用。<br><br>你不是坏人，你只是比大多数人更诚实地面对了人性中的自利本能。"
+  },
+  emot: {
+    name: "感性共鸣优先者",
+    code: "EMPT",
+    tag: "Emotional Pulse Through",
+    emoji: "💧",
+    desc: "<strong>核心驱动：感性共鸣。</strong><br><br>对错不重要，重要的是「我感觉如何」和「他太可怜了」。你的道德感是点状爆发的，容易被感人的叙事驱动，也容易因为感到「恶心」而彻底否定一个人。<br><br>你通过共情来确认自己的善良。你的世界是由一个个具体的人和故事构成的，而不是冰冷的逻辑。"
+  },
+  nihil: {
+    name: "彻底虚无躺平者",
+    code: "VOID",
+    tag: "Vanishing Object of Illusory Desire",
+    emoji: "🕳️",
+    desc: "<strong>核心驱动：无意义感。</strong><br><br>你认为社会运转的逻辑是不可改变且荒诞的，努力没有结果，道德只是枷锁。你选择「躺平」不是因为懒，而是因为不相信任何价值。<br><br>你看透了游戏规则，但你选择不玩——不是因为你输不起，而是因为你觉得这场游戏本身就没有意义。"
+  },
+  ideal: {
+    name: "原则至上理想者",
+    code: "JUST",
+    tag: "Justice Upheld Stubbornly & Truly",
+    emoji: "⚖️",
+    desc: "<strong>核心驱动：普世真理与正义。</strong><br><br>你相信世界应该按照「正确」的方式运行。你非常较真，会为了程序的公正、公认的真理去挑战权威，哪怕自己会付出代价。<br><br>你是那种会在课堂上指出老师错误、在公司揭穿皇帝新衣的人。真理比社交更重要。"
+  },
+  merit: {
+    name: "绩效至上攀登者",
+    code: "GRND",
+    tag: "Growth-Relentless, Never Dormant",
+    emoji: "📈",
+    desc: "<strong>核心驱动：成功与阶层跃升。</strong><br><br>你坚信「贫穷是因为不努力」，认为金钱和地位是衡量人的唯一硬指标。你极度崇拜强者，认为社会达尔文主义就是最公平的道德。<br><br>大厂、名校、财务自由——这些标签对你来说不仅是目标，更是信仰。"
+  },
+  macro: {
+    name: "宏大叙事信仰者",
+    code: "NARR",
+    tag: "Narrative Above Real Reality",
+    emoji: "🏴",
+    desc: "<strong>核心驱动：集体荣誉与身份认同。</strong><br><br>你将某种意识形态或集体的强盛视为最高正义，个体的得失在宏大目标面前微不足道。你通过集体的强大来获得个人的自豪感。<br><br>你相信个人应该为更大的叙事服务，而这种信念给了你归属感和使命感。"
+  },
+  phi: {
+    name: "独立思辨哲学家",
+    code: "PHIL",
+    tag: "Philosopher In Lucid Habitat",
+    emoji: "🔭",
+    desc: "<strong>核心驱动：理解与内在完整。</strong><br><br>比起「成功」，你更在意「理解」。你追求的是自我的独特性和思维的深度。道德对你来说是「我不想成为那种我不喜欢的人」，而不是为了遵守社会规范。<br><br>你愿意为了一段更深刻的体验放弃大厂高薪，追求思想的自由和人格的完整。世界是你的课题。"
+  },
+  order: {
+    name: "规则秩序守护者",
+    code: "RULE",
+    tag: "Rigorous Upholder of Lawful Ethics",
+    emoji: "📐",
+    desc: "<strong>核心驱动：稳定与规则。</strong><br><br>你不一定追求高尚，但极度厌恶混乱。法律和明面上的规矩是社会的基石，插队、大声喧哗、不守信用对你来说是不可原谅的。<br><br>你看到别人违规会感到极度不适，倾向于在现有体制内稳扎稳打，极度排斥任何形式的「潜规则」。"
+  },
+  quiet: {
+    name: "具体幸福生活家",
+    code: "COZY",
+    tag: "Content Zone, Your life",
+    emoji: "☕",
+    desc: "<strong>核心驱动：具体的幸福。</strong><br><br>你的道德半径非常小。你不关心遥远的苦难，也不关心宏大的叙事，只关心自己的猫、周末的露营、好喝的咖啡。你的道德是「做一个好邻居、好同事」。<br><br>你的朋友圈只发美食和风景，不参与任何社会争论，在私域生活中极其温柔，在公域议题中极度沉默。"
+  }
+};
+
+// ==================== QUESTIONS & SCORING ====================
+// Each option awards points to one or more types.
+// Weights: primary = 5, secondary = 3, tertiary = 1~2
+const quizData = [
+  {
+    // Q1: 过年纹身 —— chaos / emot / order / phi
+    question: "过年回家，13 岁的表弟拿出一叠压岁钱，求你带他去纹身，要把新女朋友的名字纹在胸口。你会：",
+    options: [
+      "痛快答应，帮他找个路边摊，叮嘱师傅用最持久的墨水，建议纹在更显眼的位置",
+      "觉得年少的爱慕非常浪漫，认真帮他设计纹身，但建议不纹名字而纹一句对他们重要的话",
+      "拍个视频发到家族群并艾特他妈",
+      "拒绝，但用他能接受的方式聊聊怎么成熟地对待身体和感情"
+    ],
+    scores: [
+      { chaos: 5, egoist: 2 },
+      { emot: 5, phi: 2 },
+      { order: 5, macro: 2 },
+      { phi: 5, ideal: 3 }
+    ]
+  },
+  {
+    // Q2: Crush & 算命 —— quiet / emot / phi / nihil
+    question: "你的 Crush 说 ta 本来对你无感，但大师算命说你就是 ta 的 Right Partner，然后 ta 深深爱上了你。你会：",
+    options: [
+      "只要结果是 ta 爱我，过程不重要。大师万岁！",
+      "内心立刻下头，觉得这人脑子不太灵光，这种爱也太廉价了",
+      "认真向 ta 解释什么是巴纳姆效应，以及大师是怎么获取 ta 信任的",
+      "觉得无所谓，反正大家都是基因的奴隶，大师和推荐算法没区别"
+    ],
+    scores: [
+      { quiet: 5, emot: 3 },
+      { phi: 5, ideal: 2 },
+      { ideal: 5, order: 3 },
+      { nihil: 5, phi: 2 }
+    ]
+  },
+  {
+    // Q3: 抖音争论 —— emot / macro / chaos / quiet
+    question: "朋友聚会上有人正聊一个抖音视频，突然有人说：「我从来不刷抖音，浪费时间还会降低专注力。」你会：",
+    options: [
+      "阴阳怪气：「那我们为什么还坐在同一张桌子上吃饭？」",
+      "表示赞同，并开始长篇大论短视频对人类前额叶的不可逆损伤",
+      "觉得对方很装，继续讨论那个抖音视频让对方尴尬",
+      "笑着说：「我也想戒，但我实在太爱看修驴蹄子和洗地毯了，这种快乐你懂吗？」"
+    ],
+    scores: [
+      { emot: 4, chaos: 3 },
+      { macro: 4, order: 3 },
+      { chaos: 5, egoist: 2 },
+      { quiet: 5, phi: 2 }
+    ]
+  },
+  {
+    // Q4: 意外之财 —— order / phi / merit / emot
+    question: "你突然收到了一笔够两年生活开销的意外之财，你准备：",
+    options: [
+      "依然按部就班工作，把这笔钱存起来作为对抗未来风险的底气",
+      "立刻辞职，去那个想了很久但没钱去的国家流浪，直到花光为止",
+      "全副武装投入股市或创业，试图让这笔钱变成够活二十年的巨款",
+      "给所有觉得重要的人都送一份礼物"
+    ],
+    scores: [
+      { order: 5, quiet: 2 },
+      { phi: 5, emot: 2 },
+      { merit: 5, egoist: 2 },
+      { emot: 5, quiet: 3 }
+    ]
+  },
+  {
+    // Q5: 饭店抽烟 —— chaos / emot / order / nihil
+    question: "在一个不禁烟的饭店里，隔壁有人在抽烟。你会：",
+    options: [
+      "「陪一根」，认为禁烟是多数人的暴政",
+      "用动作和表情无声地表达不满",
+      "找店员要求维持秩序，心想在一个不照顾非吸烟者的店里消费是自己的错",
+      "直接上前智斗：「我闺蜜怀孕了，你出去抽可以吗？」"
+    ],
+    scores: [
+      { chaos: 4, nihil: 3, egoist: 2 },
+      { emot: 5, quiet: 2 },
+      { order: 5, ideal: 3 },
+      { ideal: 4, chaos: 2, egoist: 2 }
+    ]
+  },
+  {
+    // Q6: 朋友成了网红 —— egoist / quiet / macro / quiet
+    question: "你听说之前玩得很好的朋友成了博主，一条商单报价 30 万。你的第一反应是：",
+    options: [
+      "赶紧翻看 ta 的账号，学习运营套路，看看自己能不能复刻，顺便让对方带自己一把",
+      "挺替 ta 开心的",
+      "思考这个时代的审美到底出了什么问题，为什么注意力经济如此剥削我们的生活",
+      "关我屁事，我只在乎今天晚上的外卖能不能准时到"
+    ],
+    scores: [
+      { egoist: 5, merit: 3 },
+      { emot: 4, quiet: 3 },
+      { macro: 4, ideal: 3 },
+      { quiet: 5, nihil: 2 }
+    ]
+  },
+  {
+    // Q7: 外卖迟到 —— order / quiet / ideal / nihil
+    question: "很饿时点的外卖迟了半小时，对方给不出解释且提前点了送达。你会：",
+    options: [
+      "直接差评加投诉，流程走满——「这种不守信用的行为必须被惩罚」",
+      "看着外卖员满头大汗的样子，虽然很气，但还是点了确认收货",
+      "觉得这是平台算法的问题，外卖员和自己都活在系统里。给 ta 发个红包吧",
+      "这种事发生太多次了，我已经没感觉了，冷了就热热吃吧"
+    ],
+    scores: [
+      { order: 5, ideal: 2 },
+      { quiet: 5, nihil: 2 },
+      { ideal: 4, phi: 3 },
+      { nihil: 5 }
+    ]
+  },
+  {
+    // Q8: 最后一块羊排 —— chaos / phi / merit / nihil
+    question: "聚餐最后一块羊排没人伸手，你和另外几个同事都想吃。你会：",
+    options: [
+      "说「这块羊排请工作能力最强的同事来吃」，复刻二桃杀三士的佳话",
+      "坚决不伸手，直到它被撤走或被别人吃掉，维持自己的体面",
+      "直接夹走",
+      "盯着那块羊排看它变凉，思考人类这种为了资源而克制的虚伪本质"
+    ],
+    scores: [
+      { chaos: 5, egoist: 3 },
+      { phi: 4, macro: 2 },
+      { merit: 5, egoist: 2 },
+      { nihil: 5, ideal: 1 }
+    ]
+  },
+  {
+    // Q9: 朋友反复抱怨 —— egoist / phi / quiet / macro
+    question: "朋友这个月第三次跟你讲被老板折磨的故事，而且 ta 会反驳你给出的所有建设性建议。你会：",
+    options: [
+      "表面继续安慰，实际把手机扣过去打游戏/刷剧，只在对方停顿时回一句「太惨了」",
+      "直接打断 ta：「如果你不打算辞职，也不打算接受建议，那我们能不能换个话题？」",
+      "感到心累但又不敢拒绝，只能一边听一边在心里默默扣掉这个朋友的好感分",
+      "既然是朋友就有义务听 ta 倾诉，哪怕 ta 只是在循环废话，也要陪 ta 走过这段阴霾"
+    ],
+    scores: [
+      { egoist: 5, nihil: 2, quiet: 1 },
+      { phi: 5, ideal: 3 },
+      { quiet: 5, emot: 2 },
+      { ideal: 4, macro: 3 }
+    ]
+  },
+  {
+    // Q10: 朋友圈都在发 VBTI —— merit / quiet / ideal / phi
+    question: "朋友圈大家都在发 SBTI 的结果，你会：",
+    options: [
+      "用 vibe coding 做一个差不多的测试，满足自己对高行动力现代人的想象",
+      "跟风测一下并转发，享受难得的社交热点",
+      "嘲讽这种东西跟星座没区别，是现代人精神空虚的止痛药，是试图把活人关进笼子的精神标签",
+      "测了，但不发，自己了解一下就好"
+    ],
+    scores: [
+      { merit: 5, egoist: 3 },
+      { quiet: 4, emot: 3 },
+      { ideal: 5, nihil: 2 },
+      { phi: 5, quiet: 2 }
+    ]
+  }
+];
+
+// ==================== STATE ====================
+let currentIndex = 0;
+const userAnswers = new Array(quizData.length).fill(null);
+
+// ==================== DOM ====================
+const startScreen  = document.getElementById("startScreen");
+const quizScreen   = document.getElementById("quizScreen");
+const resultScreen = document.getElementById("resultScreen");
+const progressDots = document.getElementById("progressDots");
+const questionNumber = document.getElementById("questionNumber");
+const questionText   = document.getElementById("questionText");
+const optionsContainer = document.getElementById("optionsContainer");
+const btnPrev = document.getElementById("btnPrev");
+
+// ==================== FUNCTIONS ====================
+function showScreen(screen) {
+  [startScreen, quizScreen, resultScreen].forEach(s => s.classList.remove("active"));
+  screen.classList.add("active");
+}
+
+function startQuiz() {
+  currentIndex = 0;
+  userAnswers.fill(null);
+  showScreen(quizScreen);
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = quizData[currentIndex];
+  const total = quizData.length;
+
+  // Dot progress
+  let dotsHTML = "";
+  for (let i = 0; i < total; i++) {
+    const cls = i < currentIndex ? "dot done" : i === currentIndex ? "dot current" : "dot";
+    dotsHTML += `<div class="${cls}"></div>`;
+  }
+  progressDots.innerHTML = dotsHTML;
+
+  // Number
+  questionNumber.textContent = `第 ${currentIndex + 1} 题 / 共 ${total} 题`;
+
+  // Text
+  questionText.textContent = q.question;
+
+  // Options
+  const labels = ["A", "B", "C", "D"];
+  optionsContainer.innerHTML = q.options.map((opt, i) => {
+    const selected = userAnswers[currentIndex] === i ? "selected" : "";
+    return `<button class="option-btn ${selected}" onclick="selectOption(${i})">${labels[i]}. ${opt}</button>`;
+  }).join("");
+
+  // Navigation
+  btnPrev.disabled = currentIndex === 0;
+}
+
+function selectOption(idx) {
+  userAnswers[currentIndex] = idx;
+  renderQuestion();               // show selected state immediately
+
+  // Auto-advance after a short delay
+  setTimeout(() => {
+    if (currentIndex < quizData.length - 1) {
+      currentIndex++;
+      renderQuestion();
+    } else {
+      showResult();
+    }
+  }, 150);
+}
+
+function prevQuestion() {
+  if (currentIndex > 0) {
+    currentIndex--;
+    renderQuestion();
+  }
+}
+
+// ==================== SCORING ALGORITHM ====================
+function calculateScores() {
+  // Initialise all type scores to 0
+  const scores = {};
+  for (const key of Object.keys(TYPE_INFO)) scores[key] = 0;
+
+  // Accumulate weighted scores from each answer
+  quizData.forEach((q, i) => {
+    const chosen = userAnswers[i];
+    if (chosen === null) return;
+    const mapping = q.scores[chosen];
+    for (const [typeKey, weight] of Object.entries(mapping)) {
+      scores[typeKey] += weight;
+    }
+  });
+
+  return scores;
+}
+
+function getTopType(scores) {
+  let maxScore = -1;
+  let topKey = "chaos";
+  for (const [key, val] of Object.entries(scores)) {
+    if (val > maxScore) {
+      maxScore = val;
+      topKey = key;
+    }
+  }
+  return topKey;
+}
+
+// ==================== RESULT RENDERING ====================
+function showResult() {
+  showScreen(resultScreen);
+
+  const scores = calculateScores();
+  const topKey = getTopType(scores);
+  const info = TYPE_INFO[topKey];
+
+  // Find the max possible score for percentage display
+  const maxScore = Math.max(...Object.values(scores), 1);
+
+  // Render type name & description
+  document.getElementById("typeName").innerHTML = `<span style="font-size:2rem;letter-spacing:.12em;display:block;margin-bottom:8px;color:#b5a990;font-weight:300;">${info.code}</span>${info.emoji}  ${info.name}`;
+  document.getElementById("typeTag").textContent = info.tag;
+  document.getElementById("typeDesc").innerHTML = info.desc;
+
+  // Render score bars (sorted descending)
+  const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+  let barsHTML = `<h3>⎯  维度分布  ⎯</h3>`;
+  sorted.forEach(([key, val]) => {
+    const pct = Math.round((val / maxScore) * 100);
+    const isTop = key === topKey;
+    barsHTML += `
+      <div class="bar-row">
+        <span class="bar-label">${TYPE_INFO[key].code}</span>
+        <div class="bar-track">
+          <div class="bar-fill ${isTop ? 'top' : 'normal'}" style="width:${pct}%"></div>
+        </div>
+        <span class="bar-pct">${val}</span>
+      </div>`;
+  });
+  document.getElementById("scoreBars").innerHTML = barsHTML;
+
+  // Render answer details
+  const labels = ["A", "B", "C", "D"];
+  let html = `<h3 style="font-size:.72rem;color:#4a4540;letter-spacing:.25em;margin-bottom:18px;text-align:center;font-weight:300;">⎯  选择回顾  ⎯</h3>`;
+  quizData.forEach((q, i) => {
+    const chosen = userAnswers[i];
+    const chosenLabel = chosen !== null ? `${labels[chosen]}. ${q.options[chosen]}` : "未作答";
+    // Show which types this choice contributed to
+    const mapping = q.scores[chosen] || {};
+    const tags = Object.entries(mapping).map(([k, v]) => `${TYPE_INFO[k].code} +${v}`).join("，");
+    html += `
+      <div class="result-card" style="animation-delay:${i * .06}s">
+        <div class="r-q">${String(i + 1).padStart(2, "0")}. ${q.question}</div>
+        <div class="r-yours">你的选择：${chosenLabel}</div>
+        <div class="r-explain">得分归属：${tags}</div>
+      </div>`;
+  });
+  document.getElementById("resultList").innerHTML = html;
+
+  // Scroll to top
+  resultScreen.scrollTop = 0;
+}
+
+function restartQuiz() {
+  showScreen(startScreen);
+}
+</script>
+
+</body>
+</html>
